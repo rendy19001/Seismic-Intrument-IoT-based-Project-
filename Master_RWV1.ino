@@ -196,7 +196,38 @@ void parsemsg(const uint8_t* mac, String msg) {
     Serial.println("regist_node "+mactostring(mac));
     }
   }
+  
+  else if (msg == strstr(devinfo, "time")) {
+    Serial.println();
+    Serial.print(" <> ");
+    Serial.print(devinfo);
+    Serial.println();
 
+    memset(devinfo, '\0', sizeof(devinfo));
+    }
+  
+  else if (msg == strstr(devinfo, "start")) {
+    char* substr = strstr(devinfo, "start") + strlen("start") + 1;
+    substr[23] = '\0';
+    Serial.println();
+    Serial.print(" <> ");
+    Serial.print(substr);
+    Serial.println();
+
+    memset(devinfo, '\0', sizeof(devinfo));
+    }
+
+  else if (msg == strstr(devinfo, "stop")) {
+    char* substr = strstr(devinfo, "stop") + strlen("stop") + 1;
+    substr[20] = '\0';
+    Serial.println();
+    Serial.print(" <> ");
+    Serial.print(substr);
+    Serial.println();
+
+    memset(devinfo, '\0', sizeof(devinfo));
+    }
+  
   else if (msg == strstr(devinfo, "info")) {
     char* substr = strstr(devinfo, "info") + strlen("info") + 1;
     Serial.println(substr);
@@ -485,7 +516,6 @@ void loop() {
     }
 
     else if (cmd == "bcast") { //send cmd to all connected node
-      int sp=param.indexOf(' ');
       sendcmd(param.substring(sp+1).c_str(), bcastmac);
       
       timer.once(5, checkReceive);
