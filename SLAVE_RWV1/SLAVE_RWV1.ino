@@ -112,26 +112,29 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     blink(1);
   }
 
-  else if (cmd == "time") {
+  else if(cmd=="stop") {
+    nodeack=false; 
+    doacq=false;
+    blink(3);
+  }
+  
+ else if (cmd == "go") {
     int dot=param.indexOf('.');
     time_t sec=param.substring(0,dot).toInt();
     time_t usec=param.substring(dot+1,dot+7).toInt();
     setTime(sec,usec);
+    char msg1[20];
+    sprintf(msg1, "time sync: sec=%ld, usec=%ld", sec, usec);
+    esp_now_send(masterAddress, (uint8_t *) msg1, strlen(msg1));
+    
+    char msg[]="start Acquisition is running!";
+    esp_now_send(masterAddress, (uint8_t *) msg, strlen(msg));
 
     Serial.printf("timesync: %0.6f\n", getTimestamp());
 
-  }
-
-  else if(cmd=="stop") {
-    doacq=false;
-    nodeack=false;
-    blink(2);
-  }
-  
-  else if (cmd=="go") {
-    doacq=true;
     nodeack = true;
-    blink(2);
+    doacq = true;
+    //blink(2);
   }
 
   else if(cmd=="info") {
@@ -180,27 +183,23 @@ void setup() {
   
   esplink();
   inscribe();
-/*
-  while(true) {
+
+   while (true) {
     while (!nodeack) {
-      delay(100);
-    } 
-
-     while (nodeack) {
-      getdata();
-      senddata();
+    delay(100);
     }
-  }
-*/
 
+    while (nodeack) {
+      if (doacq) {
+        getdata();
+        nodeack = false;
+      }
+    }
+   } 
+  
 }
 
 void loop() {
 
-    if(nodeack) {
-      if(doacq) getdata();
-      if(doacq) senddata();
-      nodeack = false;
-    }
 }
 
